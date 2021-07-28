@@ -1,0 +1,5 @@
+*.class
+jdbc.properties
+*.xml
+*.iml
+.idea

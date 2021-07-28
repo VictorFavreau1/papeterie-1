@@ -17,7 +17,7 @@ import java.util.Objects;
 public class EcranPrincipal extends JFrame {
     /* Formulaire de saisie */
     private JTextField txtReference, txtDesignation, txtMarque, txtStock, txtPrix;
-    private JLabel lblReference, lblDesignation;
+    private JLabel lblReference;
     private JRadioButton rbRamette, rbStylo;
     private JPanel panelType, panelGrammage;
     private JCheckBox chk80, chk100;
@@ -284,37 +284,6 @@ public class EcranPrincipal extends JFrame {
             btnPrecedent = new JButton();
             ImageIcon icone = new ImageIcon(Objects.requireNonNull(this.getClass().getResource("images/Back24.gif")));
             btnPrecedent.setIcon(icone);
-            btnPrecedent.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    System.out.println("J'ai clique sur le bouton precedent.");
-                }
-            });
-            btnPrecedent.addMouseListener(new MouseListener() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    System.out.println("La souris m'a survolee.");
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-
-                }
-            });
         }
         return btnPrecedent;
     }
@@ -324,7 +293,6 @@ public class EcranPrincipal extends JFrame {
             btnNouveau = new JButton();
             ImageIcon icone = new ImageIcon(Objects.requireNonNull(this.getClass().getResource("images/New24.gif")));
             btnNouveau.setIcon(icone);
-            btnNouveau.addActionListener(new ActionSurBoutons());
         }
         return btnNouveau;
     }
@@ -334,16 +302,6 @@ public class EcranPrincipal extends JFrame {
             btnEnregistrer = new JButton();
             ImageIcon icone = new ImageIcon(Objects.requireNonNull(this.getClass().getResource("images/Save24.gif")));
             btnEnregistrer.setIcon(icone);
-            btnEnregistrer.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    CatalogueManager cm = CatalogueManager.getInstance();
-                    //if (getRadioRamette().isSelected()) {
-                    // getTxtDesignation().setText("Bob");
-                    // Article article = new Article();
-                    //cm.addArticle(article);
-                }
-            });
         }
         return btnEnregistrer;
     }
