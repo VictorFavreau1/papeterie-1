@@ -35,15 +35,7 @@ public class EcranPrincipal extends JFrame {
     private JPanel panneauPrincipal;
 
     private List<Article> catalogue;
-    private static int index = 0;
-
-    public static int getIndex() {
-        return index;
-    }
-
-    public static void setIndex(int index) {
-        EcranPrincipal.index = index;
-    }
+    private int index = 0;
 
     public EcranPrincipal() {
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -323,9 +315,12 @@ public class EcranPrincipal extends JFrame {
             btnSuivant.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    int indexSuivant = EcranPrincipal.getIndex() + 1;
-                    afficher(indexSuivant);
-                    EcranPrincipal.setIndex(indexSuivant);
+                    if (index < catalogue.size() - 1) {
+                        index++;
+                    } else {
+                        index = 0;
+                    }
+                    afficher(index);
                 }
             });
         }
