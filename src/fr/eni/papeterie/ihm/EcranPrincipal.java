@@ -3,6 +3,7 @@ package fr.eni.papeterie.ihm;
 import fr.eni.papeterie.bll.BLLException;
 import fr.eni.papeterie.bll.CatalogueManager;
 import fr.eni.papeterie.bo.Article;
+import fr.eni.papeterie.bo.Ramette;
 import fr.eni.papeterie.bo.Stylo;
 
 import javax.swing.*;
@@ -15,9 +16,11 @@ import java.util.List;
 import java.util.Objects;
 
 public class EcranPrincipal extends JFrame {
+    private static final int GRAMMAGE_80 = 80;
+    private static final int GRAMMAGE_100 = 100;
     /* Formulaire de saisie */
     private JTextField txtReference, txtDesignation, txtMarque, txtStock, txtPrix;
-    private JLabel lblReference;
+    private JLabel lblReference, lblException;
     private JRadioButton rbRamette, rbStylo;
     private JPanel panelType, panelGrammage;
     private JCheckBox chk80, chk100;
@@ -37,6 +40,13 @@ public class EcranPrincipal extends JFrame {
     private List<Article> catalogue;
     private int index = 0;
 
+    public JLabel getLblException() {
+        if (this.lblException == null) {
+            this.lblException = new JLabel("");
+        }
+        return this.lblException;
+    }
+
     public EcranPrincipal() {
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
@@ -50,12 +60,31 @@ public class EcranPrincipal extends JFrame {
     private void afficher(int index) {
         Article article = this.catalogue.get(index);
         getTxtReference().setText(article.getReference());
+        getTxtDesignation().setText(article.getDesignation());
+        getTxtMarque().setText(article.getMarque());
+        getTxtPrix().setText(String.valueOf(article.getPrixUnitaire()));
+        getTxtStock().setText(String.valueOf(article.getQteStock()));
         if (article instanceof Stylo) {
             getRadioStylo().setSelected(true);
             getRadioRamette().setSelected(false);
-        } else {
+            getChk80().setSelected(false);
+            getChk100().setSelected(false);
+            getChk80().setEnabled(false);
+            getChk100().setEnabled(false);
+        } else if (article instanceof Ramette){
             getRadioStylo().setSelected(false);
             getRadioRamette().setSelected(true);
+            getChk80().setEnabled(true);
+            getChk100().setEnabled(true);
+            getCboCouleur().setSelectedItem("");
+            getCboCouleur().setEnabled(false);
+            if (((Ramette) article).getGrammage() == GRAMMAGE_80) {
+                getChk80().setSelected(true);
+                getChk100().setSelected(false);
+            } else {
+                getChk80().setSelected(false);
+                getChk100().setSelected(true);
+            }
         }
     }
 
@@ -63,9 +92,11 @@ public class EcranPrincipal extends JFrame {
         try {
             // On récupère tout les articles en base de données
             this.catalogue = CatalogueManager.getInstance().getCatalogue();
-            this.afficher(index);
+            if (catalogue.size() != 0) {
+                this.afficher(index);
+            }
         } catch (BLLException e) {
-            e.printStackTrace();
+            getLblException().setText(e.getMessage());
         }
         this.panneauPrincipal = new JPanel();
         this.panneauPrincipal.setLayout(new GridBagLayout());
@@ -89,6 +120,9 @@ public class EcranPrincipal extends JFrame {
         this.ligneCouleur();
         this.gbc.gridy = 8;
         this.ligneBoutons();
+        this.gbc.gridy = 9;
+        this.gbc.gridwidth = 2;
+        panneauPrincipal.add(getLblException(), gbc);
         this.setContentPane(panneauPrincipal);
     }
 
@@ -209,9 +243,6 @@ public class EcranPrincipal extends JFrame {
             panelType.setLayout(new BoxLayout(panelType, BoxLayout.Y_AXIS));
             panelType.add(getRadioRamette());
             panelType.add(getRadioStylo());
-            ButtonGroup bg = new ButtonGroup();
-            bg.add(getRadioRamette());
-            bg.add(getRadioStylo());
         }
         return panelType;
     }
@@ -222,9 +253,6 @@ public class EcranPrincipal extends JFrame {
             panelGrammage.setLayout(new BoxLayout(panelGrammage, BoxLayout.Y_AXIS));
             panelGrammage.add(getChk80());
             panelGrammage.add(getChk100());
-            ButtonGroup bg = new ButtonGroup();
-            bg.add(getChk80());
-            bg.add(getChk100());
         }
 
         return panelGrammage;
@@ -233,6 +261,16 @@ public class EcranPrincipal extends JFrame {
     public JRadioButton getRadioRamette() {
         if (rbRamette == null) {
             rbRamette = new JRadioButton("Ramette");
+            rbRamette.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    getCboCouleur().setSelectedItem("");
+                    getCboCouleur().setEnabled(false);
+                    getChk80().setEnabled(true);
+                    getChk100().setEnabled(true);
+                    getRadioStylo().setSelected(false);
+                }
+            });
         }
         return rbRamette;
     }
@@ -240,6 +278,17 @@ public class EcranPrincipal extends JFrame {
     public JRadioButton getRadioStylo() {
         if (rbStylo == null) {
             rbStylo = new JRadioButton("Stylo");
+            rbStylo.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    getChk80().setSelected(false);
+                    getChk80().setEnabled(false);
+                    getChk100().setSelected(false);
+                    getChk100().setEnabled(false);
+                    getRadioRamette().setSelected(false);
+                    getCboCouleur().setEnabled(true);
+                }
+            });
         }
 
         return rbStylo;
@@ -248,6 +297,12 @@ public class EcranPrincipal extends JFrame {
     public JCheckBox getChk80() {
         if (chk80 == null) {
             chk80 = new JCheckBox("80 grammes");
+            chk80.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    getChk100().setSelected(false);
+                }
+            });
         }
         return chk80;
     }
@@ -255,6 +310,12 @@ public class EcranPrincipal extends JFrame {
     public JCheckBox getChk100() {
         if (chk100 == null) {
             chk100 = new JCheckBox("100 grammes");
+            chk100.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    getChk80().setSelected(false);
+                }
+            });
         }
         return chk100;
     }
@@ -276,6 +337,17 @@ public class EcranPrincipal extends JFrame {
             btnPrecedent = new JButton();
             ImageIcon icone = new ImageIcon(Objects.requireNonNull(this.getClass().getResource("images/Back24.gif")));
             btnPrecedent.setIcon(icone);
+            btnPrecedent.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (index > 0) {
+                        index--;
+                    } else {
+                        index = catalogue.size() - 1;
+                    }
+                    afficher(index);
+                }
+            });
         }
         return btnPrecedent;
     }
@@ -285,6 +357,27 @@ public class EcranPrincipal extends JFrame {
             btnNouveau = new JButton();
             ImageIcon icone = new ImageIcon(Objects.requireNonNull(this.getClass().getResource("images/New24.gif")));
             btnNouveau.setIcon(icone);
+            btnNouveau.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    getTxtDesignation().setText("");
+                    getTxtMarque().setText("");
+                    getTxtPrix().setText("");
+                    getTxtReference().setText("");
+                    getTxtStock().setText("");
+                    getRadioRamette().setSelected(false);
+                    getRadioStylo().setSelected(false);
+                    getRadioRamette().setEnabled(true);
+                    getRadioStylo().setEnabled(true);
+                    getChk80().setSelected(false);
+                    getChk100().setSelected(false);
+                    getChk80().setEnabled(true);
+                    getChk100().setEnabled(true);
+                    getCboCouleur().setSelectedItem("");
+                    getCboCouleur().setEnabled(true);
+                    index = Integer.MIN_VALUE;
+                }
+            });
         }
         return btnNouveau;
     }
@@ -294,6 +387,42 @@ public class EcranPrincipal extends JFrame {
             btnEnregistrer = new JButton();
             ImageIcon icone = new ImageIcon(Objects.requireNonNull(this.getClass().getResource("images/Save24.gif")));
             btnEnregistrer.setIcon(icone);
+            btnEnregistrer.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Article article = null;
+                    String designation = getTxtDesignation().getText();
+                    String marque = getTxtMarque().getText();
+                    String reference = getTxtReference().getText();
+                    float prix = Float.parseFloat(getTxtPrix().getText());
+                    int stock = Integer.parseInt(getTxtStock().getText());
+                    // Soit c'est un stylo soit c'est une ramette
+                    if (getRadioStylo().isSelected()) { // C'est un stylo
+                        String couleur = String.valueOf(getCboCouleur().getSelectedItem());
+                        article = new Stylo(marque, reference, designation, prix, stock, couleur);
+                    } else if (getRadioRamette().isSelected()) { // C'est une ramette
+                        int grammage;
+                        if (getChk80().isSelected()) {
+                            grammage = GRAMMAGE_80;
+                        } else {
+                            grammage = GRAMMAGE_100;
+                        }
+                        article = new Ramette(marque, reference, designation, prix, stock, grammage);
+                    }
+                    System.out.println(index);
+                    try {
+                        if (index == Integer.MIN_VALUE) {
+                            CatalogueManager.getInstance().addArticle(article); // J'ajoute en BDD
+                            catalogue.add(article); // J"ajoute dans mon catalogue
+                        } else {
+                            CatalogueManager.getInstance().updateArticle(article); // J'update en BDD
+                            catalogue = CatalogueManager.getInstance().getCatalogue(); // J'update mon catalogue
+                        }
+                    } catch (BLLException exception) {
+                        getLblException().setText(exception.getMessage());
+                    }
+                }
+            });
         }
         return btnEnregistrer;
     }
@@ -303,6 +432,26 @@ public class EcranPrincipal extends JFrame {
             btnSupprimer = new JButton();
             ImageIcon icone = new ImageIcon(Objects.requireNonNull(this.getClass().getResource("images/Delete24.gif")));
             btnSupprimer.setIcon(icone);
+            btnSupprimer.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        int id = catalogue.get(index).getIdArticle(); // Je récupère l'id de l'article courant
+                        CatalogueManager.getInstance().removeArticle(id); // J'utilise le manager pour supprimer en BDD
+                        // catalogue = CatalogueManager.getInstance().getCatalogue(); // Avec une requete SQL
+                        catalogue.remove(index); // Mise a jour du catalogue sans faire de requete SQL
+                        if (index == catalogue.size()) {
+                            getBtnPrecedent().doClick();
+                        } else if (index < catalogue.size()) {
+                            getBtnSuivant().doClick();
+                        } else {
+                            getBtnNouveau().doClick();
+                        }
+                    } catch (BLLException bllException) {
+                        bllException.printStackTrace();
+                    }
+                }
+            });
         }
         return btnSupprimer;
     }
@@ -315,7 +464,7 @@ public class EcranPrincipal extends JFrame {
             btnSuivant.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    if (index < catalogue.size() - 1) {
+                    if (index < catalogue.size() - 1 && index != Integer.MIN_VALUE) {
                         index++;
                     } else {
                         index = 0;
